@@ -9,9 +9,10 @@
 import UIKit
 import MapKit
 
-class PhotoMapViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+class PhotoMapViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, LocationsViewControllerDelegate{
 
     @IBOutlet weak var mapView: MKMapView!
+    var saveImage:UIImage?
     
     @IBAction func cameraButton(sender: AnyObject) {
         if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.Camera) {
@@ -25,16 +26,27 @@ class PhotoMapViewController: UIViewController, UIImagePickerControllerDelegate,
             vc.delegate = self
             vc.allowsEditing = true
             vc.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
-            
             self.presentViewController(vc, animated: true, completion: nil)
         }
     }
     
+    func locationsPickedLocation(controller: LocationsViewController, latitude: NSNumber, longitude: NSNumber) {
+        //controller.delegate = self
+        self.navigationController?.popToViewController(self, animated: true)
+    }
     
     func imagePickerController(picker: UIImagePickerController,
         didFinishPickingMediaWithInfo info: [String : AnyObject]) {
             let originalImage = info[UIImagePickerControllerOriginalImage] as! UIImage
             let editedImage = info[UIImagePickerControllerEditedImage] as! UIImage
+            saveImage = editedImage
+            dismissViewControllerAnimated(true) { () -> Void in
+                self.performSegueWithIdentifier("tagSegue", sender: self)
+            }
+//            user has chosen an image, in your delegate method you'll want to:
+//            Save the image in a property.
+//            Dismiss the modal camera view controller you previously presented.
+//            Launch the LocationsViewController in the completion block of dismissing the camera modal using the segue identifier tagSegue.
     }
     
     override func viewDidLoad() {
@@ -54,14 +66,16 @@ class PhotoMapViewController: UIViewController, UIImagePickerControllerDelegate,
     }
     
 
-    /*
+    
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
+        if segue.identifier == "tagSegue" {
+            let vc = segue.destinationViewController as! LocationsViewController
+            vc.delegate = self
+        }
     }
-    */
+
 
 }
